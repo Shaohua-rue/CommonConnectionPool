@@ -5,5 +5,6 @@ include_directories(
 )
 add_executable(main 
 src/main.cpp
-src/Connection.cpp)
+src/Connection.cpp
+src/CommonConnectionPool.cpp)
 target_link_libraries(main -lmysqlclient)

@@ -22,7 +22,12 @@ public:
 
     //查询操作 select
     MYSQL_RES *query(string sql);
+    
+    //刷新一下连接的起始的空闲事件点
+    void refershAliveTime(){alivetime_=clock();};
+    //返回存活的时间
+    clock_t getAliveTime()const{return clock()-alivetime_;};
 private:
-    MYSQL *_conn;   //表示和mysql的多条连接
-	clock_t _alivetime; 
-};
+    MYSQL *conn_;   //表示和mysql的一条连接
+	clock_t alivetime_;     //记录连接进入空闲状态的存活时间
+};  

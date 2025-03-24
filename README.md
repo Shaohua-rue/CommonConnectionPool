@@ -34,6 +34,14 @@ Connect类:数据库操作代码、增删改查代码实现
 连接，而是把连接归还到连接池中）;
 8.连接的生产和连接的消费采用生产者-消费者线程模型来设计，使用了线程间的同步通信机制条件变量和互斥锁
 
+## 压力测试
+
+| 数据量  | 未使用连接池   | 使用连接池   |
+| ------ | ------------ | ---------- |
+| 1000   | 5109658ms    | 178795ms   |
+| 5000   | 26299034ms   | 976597ms   |
+| 10000  | 52702462ms   | 1459263ms  |
+
 [参考博客]
 
 [Ubuntu上安装MySQL详细指南](https://blog.csdn.net/qq_39071254/article/details/144617005?ops_request_misc=%257B%2522request%255Fid%2522%253A%252208aa90822989a4ab55c53c484c6fc8cd%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=08aa90822989a4ab55c53c484c6fc8cd&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-144617005-null-null.142^v102^pc_search_result_base9&utm_term=ubuntu%E5%AE%89%E8%A3%85MYSQL&spm=1018.2226.3001.4187)
