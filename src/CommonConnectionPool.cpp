@@ -107,17 +107,27 @@ bool ConnectionPool::loadConfigFile()
 shared_ptr<Connection> ConnectionPool::getConnection()
 {
     unique_lock<mutex> lock(queMutex_);
-    while(connectionQue_.empty())
+    // while(connectionQue_.empty())
+    // {
+    //     if(cv_status::timeout == cv_.wait_for(lock,chrono::milliseconds(connectTimeout_)))
+    //     {
+    //         if(connectionQue_.empty())
+    //         {
+    //             LOG("获取连接超时");
+    //             return nullptr;
+    //         }
+    //     }
+    // }
+
+    if( !cv_.wait_for(lock,chrono::milliseconds(connectTimeout_),[&](){
+        return !connectionQue_.empty();
+    }))
     {
-        if(cv_status::timeout == cv_.wait_for(lock,chrono::milliseconds(connectTimeout_)))
-        {
-            if(connectionQue_.empty())
-            {
-                LOG("获取连接超时");
-                return nullptr;
-            }
-        }
+        LOG("获取连接超时");
+        return nullptr;
     }
+
+
     //shared_ptr析构时会自动调用传入的删除器，这里传入的是lambda表达式，在连接放入队列时，重新绑定连接
     shared_ptr<Connection> sp (connectionQue_.front(),[&](Connection *p){
         unique_lock<mutex> lock(queMutex_);
@@ -136,10 +146,15 @@ void ConnectionPool::produceConnectionTask()
     for(;;)
     {
         unique_lock<mutex> lock(queMutex_);
-        while (!connectionQue_.empty()) 
-        {
-            cv_.wait(lock);  //队列不空，此处生产线程进入等待状态(锁被释放)
-        }
+
+        //条件变量会检查条件，如果条件不满足，则线程进入等待状态，直到条件满足，才继续往下执行
+        cv_.wait(lock,[&](){
+            return connectionQue_.empty();
+        });
+        // while (!connectionQue_.empty()) 
+        // {
+        //     cv_.wait(lock);  //队列不空，此处生产线程进入等待状态(锁被释放)
+        // }
         //连接数量没有到达上限，继续创建新的连接
         if(connectionCnt_ < maxSize_)
         {
